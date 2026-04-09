@@ -28,33 +28,50 @@ jobs:
             "pyinstaller==6.7.0"
 
       - name: Clean previous build artifacts
-        run: |
-          rm -rf build dist
+        run: rm -rf build dist
 
-      - name: Patch PyInstaller to ignore symlink conflicts
-        run: |
-          python3 - << 'PYEOF'
-          import PyInstaller.building.api as api
-          import os
-
-          src = open(api.__file__).read()
-          old = 'os.symlink(src_name, dest_path)  # Create link at dest_path, pointing at (relative) src_name'
-          new = (
-              'try:\n'
-              '                    os.symlink(src_name, dest_path)  # Create link at dest_path, pointing at (relative) src_name\n'
-              '                except FileExistsError:\n'
-              '                    pass'
-          )
-          if old in src:
-              src = src.replace(old, new)
-              open(api.__file__, 'w').write(src)
-              print("Patched PyInstaller symlink handling")
-          else:
-              print("Pattern not found - may already be patched or version mismatch")
-          PYEOF
-
-      - name: Build .app
+      - name: Build (COLLECT only, no BUNDLE)
         run: pyinstaller powdr_native.spec
+
+      - name: Manually assemble .app bundle
+        run: |
+          # Create the .app structure manually
+          APP=dist/powdR.app
+          mkdir -p "$APP/Contents/MacOS"
+          mkdir -p "$APP/Contents/Resources"
+
+          # Move the COLLECT output into the bundle
+          mv dist/powdR "$APP/Contents/MacOS/powdR_internal"
+
+          # Copy the executable to the standard MacOS location
+          cp "$APP/Contents/MacOS/powdR_internal/powdR" "$APP/Contents/MacOS/powdR"
+
+          # Write Info.plist
+          cat > "$APP/Contents/Info.plist" << 'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key>
+            <string>powdR</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.powdr.xrpd</string>
+            <key>CFBundleName</key>
+            <string>powdR</string>
+            <key>CFBundleDisplayName</key>
+            <string>powdR</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0.0</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+            <key>LSBackgroundOnly</key>
+            <false/>
+          </dict>
+          </plist>
+          PLIST
+
+          echo "App bundle assembled at $APP"
+          ls -la "$APP/Contents/MacOS/"
 
       - name: Zip .app for download
         run: cd dist && zip -r powdR-mac.zip powdR.app
