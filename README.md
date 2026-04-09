@@ -13,6 +13,8 @@ Every push to `main` automatically builds both a `.app` (Mac) and `.exe` (Window
 
 You can also trigger a build manually: Actions → Build powdR → Run workflow.
 
+Download by navigating to Actions -> latest Build powdR run -> scroll to bottom -> download powdr-windows.exe or powdr-mac.app 
+
 ### Option B — Build locally on macOS
 
 ```bash
