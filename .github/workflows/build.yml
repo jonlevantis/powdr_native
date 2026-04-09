@@ -73,39 +73,3 @@ jobs:
           name: powdR-windows
           path: dist/powdR-windows.zip
           retention-days: 30
-        uses: actions/upload-artifact@v4
-        with:
-          name: powdR-mac
-          path: dist/powdR-mac.zip
-          retention-days: 30
-
-  # ─────────────────────────────────────────────
-  # Windows → powdR.exe (zipped folder)
-  # ─────────────────────────────────────────────
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: pip install PyQt6 pandas numpy scipy matplotlib pyinstaller
-
-      - name: Build .exe
-        run: pyinstaller powdr_windows.spec
-
-      - name: Zip dist folder for download
-        run: |
-          cd dist
-          Compress-Archive -Path powdR -DestinationPath powdR-windows.zip
-
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: powdR-windows
-          path: dist/powdR-windows.zip
-          retention-days: 30
