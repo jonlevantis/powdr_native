@@ -30,33 +30,8 @@ jobs:
       - name: Clean previous build artifacts
         run: rm -rf build dist
 
-      - name: Build (with symlink patch)
+      - name: Build .app (with symlink patch)
         run: python3 build_macos.py
-
-      - name: Assemble .app bundle
-        run: |
-          APP=dist/powdR.app
-          mkdir -p "$APP/Contents/MacOS"
-          mkdir -p "$APP/Contents/Resources"
-          cp -R dist/powdR/. "$APP/Contents/MacOS/"
-          python3 -c "
-          plist = '''<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-          <!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
-          <plist version=\"1.0\">
-          <dict>
-            <key>CFBundleExecutable</key><string>powdR</string>
-            <key>CFBundleIdentifier</key><string>com.powdr.xrpd</string>
-            <key>CFBundleName</key><string>powdR</string>
-            <key>CFBundleDisplayName</key><string>powdR</string>
-            <key>CFBundleShortVersionString</key><string>1.0.0</string>
-            <key>NSHighResolutionCapable</key><true/>
-            <key>LSBackgroundOnly</key><false/>
-          </dict>
-          </plist>'''
-          open('dist/powdR.app/Contents/Info.plist', 'w').write(plist)
-          print('Info.plist written')
-          "
-          ls -la "$APP/Contents/MacOS/" | head -10
 
       - name: Zip .app for download
         run: cd dist && zip -r powdR-mac.zip powdR.app
