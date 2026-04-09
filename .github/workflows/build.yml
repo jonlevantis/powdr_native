@@ -24,7 +24,6 @@ jobs:
           pip install \
             "PyQt6==6.7.1" \
             "PyQt6-Qt6==6.7.1" \
-            "PyQt6-sip==13.6.0" \
             pandas numpy scipy matplotlib \
             "pyinstaller==6.10.0"
 
@@ -54,12 +53,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install `
-            "PyQt6==6.7.1" `
-            "PyQt6-Qt6==6.7.1" `
-            "PyQt6-sip==13.6.0" `
-            pandas numpy scipy matplotlib `
-            "pyinstaller==6.10.0"
+          pip install "PyQt6==6.7.1" "PyQt6-Qt6==6.7.1" pandas numpy scipy matplotlib "pyinstaller==6.10.0"
 
       - name: Build .exe
         run: pyinstaller powdr_windows.spec
