@@ -1,15 +1,16 @@
 # powdr_native.spec
-# PyInstaller spec for the native PyQt6 macOS app
-#
-# Usage (in the powdr_native folder):
-#   pip install pyinstaller PyQt6 PyQt6-WebEngine pandas numpy scipy matplotlib
-#   pyinstaller powdr_native.spec
-#
-# Output: dist/powdR.app
+# PyInstaller spec for packaging powdR GUI on macOS
 
+import os
+import shutil
 from PyInstaller.utils.hooks import collect_data_files, collect_all
 
 block_cipher = None
+
+# Clean dist directory before building to prevent symlink conflicts
+dist_dir = os.path.join(os.path.dirname(os.path.abspath(SPEC)), 'dist', 'powdR')
+if os.path.exists(dist_dir):
+    shutil.rmtree(dist_dir)
 
 qt_datas, qt_binaries, qt_hiddenimports = collect_all("PyQt6")
 
@@ -18,10 +19,11 @@ a = Analysis(
     pathex=["."],
     binaries=qt_binaries,
     datas=[
-        ("afps.py",          "."),
-        ("fitting.py",       "."),
-        ("preprocessing.py", "."),
-        ("plotting.py",      "."),
+        ("app_qt.py",          "."),
+        ("afps.py",            "."),
+        ("fitting.py",         "."),
+        ("preprocessing.py",   "."),
+        ("plotting.py",        "."),
         *qt_datas,
         *collect_data_files("matplotlib"),
         *collect_data_files("scipy"),
@@ -60,7 +62,7 @@ exe = EXE(
     debug=False,
     strip=False,
     upx=True,
-    console=False,       # set True to see debug output
+    console=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,

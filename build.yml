@@ -1,0 +1,69 @@
+name: Build powdR
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            "PyQt6==6.7.1" \
+            "PyQt6-Qt6==6.7.1" \
+            pandas numpy scipy matplotlib \
+            "pyinstaller==6.7.0"
+
+      - name: Build .app
+        run: pyinstaller --clean powdr_native.spec
+
+      - name: Zip .app for download
+        run: cd dist && zip -r powdR-mac.zip powdR.app
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: powdR-mac
+          path: dist/powdR-mac.zip
+          retention-days: 30
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install "PyQt6==6.7.1" "PyQt6-Qt6==6.7.1" pandas numpy scipy matplotlib "pyinstaller==6.7.0"
+
+      - name: Build .exe
+        run: pyinstaller --clean powdr_windows.spec
+
+      - name: Zip dist folder
+        run: cd dist && Compress-Archive -Path powdR -DestinationPath powdR-windows.zip
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: powdR-windows
+          path: dist/powdR-windows.zip
+          retention-days: 30
