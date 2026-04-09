@@ -27,6 +27,32 @@ jobs:
             pandas numpy scipy matplotlib \
             "pyinstaller==6.7.0"
 
+      - name: Clean previous build artifacts
+        run: |
+          rm -rf build dist
+
+      - name: Patch PyInstaller to ignore symlink conflicts
+        run: |
+          python3 - << 'PYEOF'
+          import PyInstaller.building.api as api
+          import os
+
+          src = open(api.__file__).read()
+          old = 'os.symlink(src_name, dest_path)  # Create link at dest_path, pointing at (relative) src_name'
+          new = (
+              'try:\n'
+              '                    os.symlink(src_name, dest_path)  # Create link at dest_path, pointing at (relative) src_name\n'
+              '                except FileExistsError:\n'
+              '                    pass'
+          )
+          if old in src:
+              src = src.replace(old, new)
+              open(api.__file__, 'w').write(src)
+              print("Patched PyInstaller symlink handling")
+          else:
+              print("Pattern not found - may already be patched or version mismatch")
+          PYEOF
+
       - name: Build .app
         run: pyinstaller powdr_native.spec
 
@@ -56,7 +82,7 @@ jobs:
           pip install "PyQt6==6.7.1" "PyQt6-Qt6==6.7.1" pandas numpy scipy matplotlib "pyinstaller==6.7.0"
 
       - name: Build .exe
-        run: pyinstaller powdr_windows.spec
+        run: pyinstaller --clean powdr_windows.spec
 
       - name: Zip dist folder
         run: cd dist && Compress-Archive -Path powdR -DestinationPath powdR-windows.zip
