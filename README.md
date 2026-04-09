@@ -7,13 +7,9 @@ implementing Butler & Hillier 2021. Built with PyQt6.
 
 ## Getting builds
 
-### Option A — GitHub Actions (recommended, no Windows machine needed)
+### Option A — GitHub Actions
 
 Every push to `main` automatically builds both a `.app` (Mac) and `.exe` (Windows).
-
-1. Push this folder to a GitHub repository
-2. Go to **Actions** tab → select the latest **Build powdR** run
-3. Scroll to **Artifacts** at the bottom → download `powdR-mac` or `powdR-windows`
 
 You can also trigger a build manually: Actions → Build powdR → Run workflow.
 
@@ -39,22 +35,6 @@ python app_qt.py          # test first
 pyinstaller powdr_windows.spec
 # output: dist\powdR\powdR.exe
 ```
-
----
-
-## Setting up the GitHub repo (first time)
-
-```bash
-cd powdr_native
-git init
-git add .
-git commit -m "Initial commit"
-# Create a new repo on github.com, then:
-git remote add origin https://github.com/YOUR_USERNAME/powdr.git
-git push -u origin main
-```
-
-That's it — the Actions workflow fires automatically on push.
 
 ---
 
