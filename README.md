@@ -69,6 +69,7 @@ powdr_native/
 ├── plotting.py            # Plot utilities
 ├── powdr_native.spec      # PyInstaller spec — macOS
 ├── powdr_windows.spec     # PyInstaller spec — Windows
+├── example_inputs/        # Files for example analysis
 └── .github/
     └── workflows/
         └── build.yml      # GitHub Actions CI build
@@ -87,7 +88,7 @@ tth,   COR,  CAL
 
 **Phases CSV:**
 ```
-phase_id, phase_name, rir
+phase_id, phase_name, rir 
 COR,      Corundum,   1.00
 CAL,      Calcite,    2.51
 ```
