@@ -30,11 +30,32 @@ jobs:
       - name: Clean previous build artifacts
         run: rm -rf build dist
 
-      - name: Build .app (with symlink patch)
+      - name: Build (COLLECT only)
         run: python3 build_macos.py
 
-      - name: Zip .app for download
-        run: cd dist && zip -r powdR-mac.zip powdR.app
+      - name: Assemble .app using ditto (preserves symlinks)
+        run: |
+          APP=dist/powdR.app
+          mkdir -p "$APP/Contents/MacOS"
+          mkdir -p "$APP/Contents/Resources"
+          ditto dist/powdR "$APP/Contents/MacOS"
+          python3 -c "
+          open('dist/powdR.app/Contents/Info.plist','w').write('''<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+          <!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+          <plist version=\"1.0\"><dict>
+            <key>CFBundleExecutable</key><string>powdR</string>
+            <key>CFBundleIdentifier</key><string>com.powdr.xrpd</string>
+            <key>CFBundleName</key><string>powdR</string>
+            <key>CFBundleDisplayName</key><string>powdR</string>
+            <key>CFBundleShortVersionString</key><string>1.0.0</string>
+            <key>NSHighResolutionCapable</key><true/>
+            <key>LSBackgroundOnly</key><false/>
+          </dict></plist>''')
+          print('Info.plist written')
+          "
+
+      - name: Zip .app preserving symlinks
+        run: cd dist && ditto -c -k --keepParent powdR.app powdR-mac.zip
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
