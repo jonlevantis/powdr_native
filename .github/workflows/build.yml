@@ -33,12 +33,27 @@ jobs:
       - name: Build (COLLECT only)
         run: python3 build_macos.py
 
-      - name: Assemble .app using ditto (preserves symlinks)
+      - name: Show COLLECT output structure
+        run: |
+          echo "=== dist/powdR/ top level ==="
+          ls dist/powdR/
+          echo "=== _internal (if exists) ==="
+          ls dist/powdR/_internal/ 2>/dev/null | head -20 || echo "no _internal"
+
+      - name: Assemble .app
         run: |
           APP=dist/powdR.app
           mkdir -p "$APP/Contents/MacOS"
           mkdir -p "$APP/Contents/Resources"
-          ditto dist/powdR "$APP/Contents/MacOS"
+          mkdir -p "$APP/Contents/Frameworks"
+
+          # The executable goes in MacOS/
+          cp dist/powdR/powdR "$APP/Contents/MacOS/powdR"
+          chmod +x "$APP/Contents/MacOS/powdR"
+
+          # Everything else (_internal with Python, PyQt6, etc) goes in Frameworks/
+          ditto dist/powdR "$APP/Contents/Frameworks"
+
           python3 -c "
           open('dist/powdR.app/Contents/Info.plist','w').write('''<?xml version=\"1.0\" encoding=\"UTF-8\"?>
           <!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
@@ -51,8 +66,9 @@ jobs:
             <key>NSHighResolutionCapable</key><true/>
             <key>LSBackgroundOnly</key><false/>
           </dict></plist>''')
-          print('Info.plist written')
           "
+          echo "=== Final .app structure ==="
+          ls "$APP/Contents/"
 
       - name: Zip .app preserving symlinks
         run: cd dist && ditto -c -k --keepParent powdR.app powdR-mac.zip
