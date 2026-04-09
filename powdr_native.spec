@@ -1,16 +1,9 @@
 # powdr_native.spec
 # PyInstaller spec for packaging powdR GUI on macOS
 
-import os
-import shutil
 from PyInstaller.utils.hooks import collect_data_files, collect_all
 
 block_cipher = None
-
-# Clean dist directory before building to prevent symlink conflicts
-dist_dir = os.path.join(os.path.dirname(os.path.abspath(SPEC)), 'dist', 'powdR')
-if os.path.exists(dist_dir):
-    shutil.rmtree(dist_dir)
 
 qt_datas, qt_binaries, qt_hiddenimports = collect_all("PyQt6")
 
