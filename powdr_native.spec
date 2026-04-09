@@ -1,8 +1,4 @@
 # powdr_native.spec
-# PyInstaller spec for packaging powdR GUI on macOS
-# Note: BUNDLE step removed due to PyInstaller/PyQt6 framework conflict on macOS 15.
-# The workflow manually creates the .app bundle structure after COLLECT completes.
-
 from PyInstaller.utils.hooks import collect_data_files, collect_all
 
 block_cipher = None
@@ -72,4 +68,18 @@ coll = COLLECT(
     strip=False,
     upx=True,
     name="powdR",
+)
+
+# BUNDLE creates the proper .app structure with correct Frameworks layout
+app = BUNDLE(
+    coll,
+    name="powdR.app",
+    icon=None,
+    bundle_identifier="com.powdr.xrpd",
+    info_plist={
+        "NSHighResolutionCapable": True,
+        "CFBundleShortVersionString": "1.0.0",
+        "CFBundleName": "powdR",
+        "CFBundleDisplayName": "powdR",
+    },
 )
