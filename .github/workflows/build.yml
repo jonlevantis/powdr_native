@@ -32,60 +32,41 @@ jobs:
 
       - name: Patch PyInstaller symlink handling
         run: |
-          # Find the actual api.py file
           API_PY=$(python3 -c "import PyInstaller.building.api; print(PyInstaller.building.api.__file__)")
           echo "Patching: $API_PY"
-
-          # Show the lines around the symlink call before patching
           grep -n "symlink" "$API_PY" || echo "No symlink lines found"
-
-          # Use sed to wrap EVERY os.symlink call with try/except
           sed -i '' 's/^\([[:space:]]*\)os\.symlink(\(.*\))$/\1try:\n\1    os.symlink(\2)\n\1except FileExistsError:\n\1    pass/' "$API_PY"
-
           echo "Patch applied. Verifying:"
           grep -A3 "os.symlink" "$API_PY" | head -20
-
-          # Delete cached bytecode so Python uses the patched source
           find "$(dirname $API_PY)/__pycache__" -name "api*.pyc" -delete 2>/dev/null || true
           echo "Bytecode cache cleared"
 
       - name: Build
         run: pyinstaller powdr_native.spec
 
-      - name: Manually assemble .app bundle
+      - name: Assemble .app bundle
         run: |
           APP=dist/powdR.app
           mkdir -p "$APP/Contents/MacOS"
           mkdir -p "$APP/Contents/Resources"
-
-          # Copy the entire COLLECT output into the bundle
           cp -R dist/powdR/. "$APP/Contents/MacOS/"
-
-          # Write Info.plist
-          cat > "$APP/Contents/Info.plist" << 'PLIST'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleExecutable</key>
-  <string>powdR</string>
-  <key>CFBundleIdentifier</key>
-  <string>com.powdr.xrpd</string>
-  <key>CFBundleName</key>
-  <string>powdR</string>
-  <key>CFBundleDisplayName</key>
-  <string>powdR</string>
-  <key>CFBundleShortVersionString</key>
-  <string>1.0.0</string>
-  <key>NSHighResolutionCapable</key>
-  <true/>
-  <key>LSBackgroundOnly</key>
-  <false/>
-</dict>
-</plist>
-PLIST
-
-          echo "Bundle assembled:"
+          python3 -c "
+          plist = '''<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+          <!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+          <plist version=\"1.0\">
+          <dict>
+            <key>CFBundleExecutable</key><string>powdR</string>
+            <key>CFBundleIdentifier</key><string>com.powdr.xrpd</string>
+            <key>CFBundleName</key><string>powdR</string>
+            <key>CFBundleDisplayName</key><string>powdR</string>
+            <key>CFBundleShortVersionString</key><string>1.0.0</string>
+            <key>NSHighResolutionCapable</key><true/>
+            <key>LSBackgroundOnly</key><false/>
+          </dict>
+          </plist>'''
+          open('dist/powdR.app/Contents/Info.plist', 'w').write(plist)
+          print('Info.plist written')
+          "
           ls -la "$APP/Contents/MacOS/" | head -10
 
       - name: Zip .app for download
