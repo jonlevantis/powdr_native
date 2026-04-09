@@ -30,19 +30,8 @@ jobs:
       - name: Clean previous build artifacts
         run: rm -rf build dist
 
-      - name: Patch PyInstaller symlink handling
-        run: |
-          API_PY=$(python3 -c "import PyInstaller.building.api; print(PyInstaller.building.api.__file__)")
-          echo "Patching: $API_PY"
-          grep -n "symlink" "$API_PY" || echo "No symlink lines found"
-          sed -i '' 's/^\([[:space:]]*\)os\.symlink(\(.*\))$/\1try:\n\1    os.symlink(\2)\n\1except FileExistsError:\n\1    pass/' "$API_PY"
-          echo "Patch applied. Verifying:"
-          grep -A3 "os.symlink" "$API_PY" | head -20
-          find "$(dirname $API_PY)/__pycache__" -name "api*.pyc" -delete 2>/dev/null || true
-          echo "Bytecode cache cleared"
-
-      - name: Build
-        run: pyinstaller powdr_native.spec
+      - name: Build (with symlink patch)
+        run: python3 build_macos.py
 
       - name: Assemble .app bundle
         run: |
