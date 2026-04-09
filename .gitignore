@@ -1,0 +1,15 @@
+# PyInstaller
+build/
+dist/
+*.spec.bak
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# Python
+*.egg-info/
+.venv/
+venv/
